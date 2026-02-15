@@ -23,6 +23,9 @@ SaaS companies track product metrics in one silo and revenue outcomes in another
 | **Paid cohort retention** | Month-6 retention for paid cohorts ranged 55–72% depending on feature adoption profile |
 | **Revenue decomposition** | Full waterfall split: New Customers · Plan Upgrade · Feature Lift · Contraction · Churn · Residual |
 
+![Revenue Bridge Waterfall](assets/revenue_bridge_waterfall.png)
+*Quarterly MRR decomposition: expansion components (positive) vs churn and contraction (negative)*
+
 ---
 
 ## What Business Questions This Answers
