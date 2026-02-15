@@ -1,0 +1,99 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Raw ingestion layer. In production, replace sim_* tables with real source
+      tables from your event pipeline (Segment/Amplitude) and billing system
+      (Stripe/Chargebee). See ADAPTER_GUIDE.md for full replacement instructions.
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: "{{ env_var('BQ_RAW_DATASET', 'raw_bridge') }}"
+    tables:
+      - name: ga4_events
+        description: GA4 BigQuery export. Real source — replace with your GA4 property export.
+        columns:
+          - name: user_id
+            description: Pseudo user identifier.
+          - name: event_ts_utc
+            description: Event timestamp in UTC.
+          - name: event_name
+            description: Normalized event name.
+
+      - name: uci_transactions
+        description: UCI Online Retail II dataset. Used as transaction volume benchmark.
+        columns:
+          - name: customer_id
+          - name: invoice_ts_utc
+          - name: total_amount
+
+      - name: sec_financials
+        description: SEC EDGAR financial statement data. Used as public SaaS revenue benchmark.
+        columns:
+          - name: fiscal_quarter
+          - name: revenue_usd
+
+      - name: sim_accounts
+        description: >
+          Simulated SaaS account master. In production, replace with your CRM or
+          auth system accounts table (HubSpot, Salesforce, internal).
+        columns:
+          - name: account_id
+            description: Unique workspace/organization identifier. NOT NULL.
+            tests:
+              - not_null
+              - unique
+          - name: signup_ts_utc
+          - name: initial_plan_tier
+          - name: region
+          - name: acquisition_channel
+
+      - name: sim_events
+        description: >
+          Simulated SaaS lifecycle events. In production, replace with your Segment
+          or Amplitude BigQuery export. Required event_name values: signup,
+          first_payment_received, app_integration_connected, plan_upgrade,
+          feature_activated. Required feature_name values for feature_activated:
+          bank_feed_sync, multi_currency, recurring_invoices.
+        columns:
+          - name: account_id
+            tests:
+              - not_null
+          - name: event_name
+            tests:
+              - not_null
+          - name: event_ts_utc
+            tests:
+              - not_null
+          - name: feature_name
+            description: Populated only when event_name = 'feature_activated'.
+
+      - name: sim_revenue_monthly
+        description: >
+          Monthly MRR snapshot per account. In production, replace with your Stripe
+          or Chargebee subscription MRR rollup table. Each row is one account-month.
+          Bridge classification (bridge_component, is_churn, etc.) can be pre-computed
+          in a transformation layer or derived in staging from mrr_start / mrr_end.
+        columns:
+          - name: account_id
+            tests:
+              - not_null
+          - name: month
+            description: First day of the month. DATE type.
+            tests:
+              - not_null
+          - name: mrr_start
+            description: MRR at the beginning of the month.
+          - name: mrr_end
+            description: MRR at the end of the month.
+          - name: plan_tier
+            description: starter | professional | enterprise
+          - name: status
+            description: active | churned
+          - name: bridge_component
+            description: >
+              Revenue attribution bucket: New Customers, Plan Upgrade,
+              Feature Adoption Lift, Contraction, Churn, Other/Residual.
+          - name: is_churn
+            description: 1 if mrr_end = 0 and mrr_start > 0.
+          - name: is_contraction
+            description: 1 if mrr_end > 0 and mrr_end < mrr_start.

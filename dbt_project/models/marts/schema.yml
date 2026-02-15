@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: mart_account_monthly_state
+    description: Account-level monthly state used as the shared truth table for all mart KPIs.
+    columns:
+      - name: account_id
+        tests:
+          - not_null
+      - name: month
+        tests:
+          - not_null
+      - name: bridge_component
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - account_id
+              - month
+
+  - name: mart_revenue_bridge_quarterly
+    columns:
+      - name: bridge_component
+        tests:
+          - not_null
+
+  - name: mart_feature_impact
+    description: >
+      Feature impact matrix comparing churn rate, contraction rate, and avg MRR
+      between adopted vs not-adopted segments per feature, plus by feature count.
+    columns:
+      - name: feature_name
+        tests:
+          - not_null
+      - name: segment
+        tests:
+          - not_null

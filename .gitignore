@@ -1,0 +1,20 @@
+.venv/
+.venv*/
+.env
+__pycache__/
+.pytest_cache/
+*.pyc
+logs/
+target/
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+data/raw/*.zip
+data/raw/*.xlsx
+# Large real datasets — download from source (see README)
+data/raw/ga4_events_real.csv
+data/raw/uci_transactions_real.csv
+data/outputs/*.json
+data/outputs/*.csv
+data/outputs/*.png
+data/outputs/powerbi_extracts/
