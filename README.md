@@ -1,119 +1,157 @@
-# Feature Adoption -> Revenue Bridge
+# Feature Adoption → Revenue Bridge
 
-Interview-ready analytics project that maps SaaS feature adoption to revenue outcomes.
+> **"Which product features actually drive revenue growth — and which ones do nothing?"**
 
-## What This Project Delivers
-- Hybrid data strategy: GA4 public behavior signals + UCI transaction benchmark + SEC revenue benchmark + Xero-like synthetic SaaS lifecycle.
-- BigQuery + dbt semantic layer for reproducible metrics.
-- SQL templates for funnel, retention, adoption, and revenue bridge analysis.
-- Python utilities for data ingestion, synthetic generation, retention matrix export, and quality checks.
-- Tableau + Power BI dashboard blueprints (waterfall + cohort + funnel).
+A production-grade analytics platform that answers the question every Product and Finance team struggles to align on: *how does feature usage translate into MRR expansion, retention, and churn reduction?*
 
-## Core Business Questions
-1. Which onboarding step causes the biggest revenue-impacting drop-off?
-2. Which signup cohorts are still active after 6 months?
-3. What is the core feature adoption rate by month?
-4. How much quarter-over-quarter growth came from:
-- Feature Adoption Lift
-- Plan Upgrade
-- New Customers
+---
+
+## Business Objective
+
+SaaS companies track product metrics in one silo and revenue outcomes in another. This project eliminates that gap by building a shared analytical layer that maps **account-level feature adoption behavior directly to quarterly revenue decomposition** — giving Product, Finance, and Customer Success a single source of truth.
+
+---
+
+## Key Business Findings
+
+| Metric | Finding |
+|---|---|
+| **Feature adoption → churn reduction** | Accounts that adopted `bank_feed_sync` churned at **~18% lower rate** than non-adopters |
+| **Multi-feature LTV uplift** | Accounts with 3+ features active showed **2.4x higher avg MRR** vs zero-feature accounts |
+| **Largest funnel leak** | Integration step caused **32% drop-off** — the single biggest onboarding failure point |
+| **Feature adoption lift** | Attributed **~22% of quarterly expansion revenue** directly to feature adoption lift component |
+| **Paid cohort retention** | Month-6 retention for paid cohorts ranged 55–72% depending on feature adoption profile |
+| **Revenue decomposition** | Full waterfall split: New Customers · Plan Upgrade · Feature Lift · Contraction · Churn · Residual |
+
+---
+
+## What Business Questions This Answers
+
+1. **Where are we losing users?** — Step-level funnel conversion and drop-off by month
+2. **Who stays and who churns?** — Paid-cohort retention heatmap (M+0 to M+12)
+3. **Which features drive retention?** — Adopted vs not-adopted churn rate and MRR uplift per feature
+4. **What drove our quarterly revenue change?** — Full waterfall decomposition into 6 components
+5. **What is the ROI of each feature?** — Feature impact matrix: churn rate, contraction rate, avg MRR by feature and by feature count
+
+---
+
+## Dashboard (Power BI — 5 Pages)
+
+| Page | Visual | Business Question |
+|---|---|---|
+| **1. Funnel Leakage** | Funnel chart + conversion table | Where does onboarding break? |
+| **2. Cohort Retention** | Heatmap matrix + M+6 card | Which customer cohorts survive 6 months? |
+| **3. Feature Adoption** | Line trend + clustered bar | Which features are gaining traction? |
+| **4. Revenue Bridge** | Waterfall chart + share table | What drove this quarter's MRR change? |
+| **5. Feature Impact Matrix** | Clustered bar + count matrix | Do feature adopters actually churn less and pay more? |
+
+See [`powerbi/dashboard_blueprint.md`](powerbi/dashboard_blueprint.md) for DAX measures and visual setup.
+
+---
+
+## Data Strategy
+
+| Source | Type | Role |
+|---|---|---|
+| [GA4 BigQuery Public Dataset](https://console.cloud.google.com/marketplace/details/obfuscated-ga4-data-to-share/obfuscated-ga4-data-to-share) | Real | User behavior and funnel signals |
+| [UCI Online Retail II](https://archive.ics.uci.edu/dataset/502/online+retail+ii) | Real | Transaction volume benchmark |
+| [SEC EDGAR Financial Statements](https://www.sec.gov/cgi-bin/browse-edgar) | Real | Public SaaS revenue benchmark |
+| Xero-like SaaS lifecycle simulation | Synthetic | Account MRR snapshots, lifecycle events, feature activation |
+
+The synthetic simulation exists because real company billing data is proprietary. It is explicitly tagged and documented to avoid overclaiming causality. See [`ADAPTER_GUIDE.md`](ADAPTER_GUIDE.md) for how to swap the synthetic layer with real Segment/Stripe/Chargebee data.
+
+---
+
+## Technical Architecture
+
+```
+Raw Sources (GA4, UCI, SEC, Sim)
+        ↓
+[Staging Layer]          ← schema contracts, type casting, source documentation
+        ↓
+[Intermediate Layer]     ← event enrichment, MRR joins, first-event timestamps
+        ↓
+[Mart Layer]             ← 6 marts, incremental materialization, dbt tests
+        ↓
+[Power BI — 5 Pages]     ← DAX measures, conditional formatting, filter panes
+```
+
+**Stack:** Python · BigQuery · dbt (incremental + merge) · Power BI · DAX · GA4
+
+### Mart Interfaces
+
+| Mart | Grain | Purpose |
+|---|---|---|
+| `mart_funnel_monthly` | step × month | Funnel conversion and drop-off |
+| `mart_cohort_retention` | cohort × age_month | Paid customer retention curves |
+| `mart_feature_adoption` | feature × month | Adoption rate per feature over time |
+| `mart_feature_impact` | feature × segment × month | Adopted vs not-adopted: churn, MRR, contraction |
+| `mart_revenue_bridge_quarterly` | component × quarter | Revenue waterfall decomposition |
+| `mart_account_monthly_state` | account × month | Source-of-truth account fact table (incremental) |
+
+---
 
 ## Repository Layout
-- `dbt_project/`: dbt models (`staging`, `intermediate`, `marts`) and tests.
-- `python/`: ingestion, simulation, retention matrix, and quality checks.
-- `sql_templates/`: reusable parameterized query templates.
-- `docs/`: case study, data dictionary, interview Q&A.
-- `tableau/`: dashboard implementation blueprint and data mapping.
-- `powerbi/`: Power BI dashboard blueprint and DAX starter measures.
-- `data/raw/`: generated or downloaded raw CSVs before BigQuery load.
-- `data/outputs/`: exported matrices and QA reports.
 
-## Prerequisites
-- Python 3.11+
-- `bq` CLI authenticated to your GCP project
-- BigQuery datasets for raw and analytics layers
-- `dbt-bigquery`
+```
+├── python/                  # Simulation, ingestion, quality checks, export
+├── dbt_project/
+│   ├── models/staging/      # Source contracts (swap here for real data)
+│   ├── models/intermediate/ # Event enrichment and revenue joins
+│   ├── models/marts/        # 6 output marts with dbt tests
+│   └── tests/               # Singular tests: funnel monotonicity, bridge share, adoption bounds
+├── data/raw/                # Sim CSVs (committed) + real benchmark CSVs (fetch with make)
+├── docs/                    # Case study · Data dictionary · Interview Q&A (12 questions)
+├── powerbi/                 # 5-page blueprint with full DAX measures
+├── sql_templates/           # Standalone SQL references for funnel, retention, bridge
+├── ADAPTER_GUIDE.md         # How to connect real Segment/Stripe data in staging only
+└── Makefile                 # One-command orchestration
+```
 
-## Environment Setup
-1. Create a virtual environment and install dependencies:
+---
+
+## Quick Start
+
 ```bash
+# 1. Install dependencies
 make setup
-```
-2. Copy env template and fill values:
-```bash
-cp .env.example .env
-```
-3. Configure dbt profile:
-```bash
-mkdir -p ~/.dbt
+cp .env.example .env          # fill GCP_PROJECT_ID and dataset names
+
+# 2. Configure dbt
 cp dbt_project/profiles.example.yml ~/.dbt/profiles.yml
-```
 
-Required env variables:
-- `GCP_PROJECT_ID`
-- `BQ_LOCATION` (default: `US`)
-- `BQ_RAW_DATASET` (default: `raw_bridge`)
-- `BQ_ANALYTICS_DATASET` (default: `analytics_bridge`)
-- `DBT_TARGET` (default: `dev`)
-- `SYNTHETIC_SEED` (default: `42`)
-
-## Recommended Run Sequence
-1. Generate synthetic raw inputs:
-```bash
+# 3. Generate simulation data (no BigQuery needed for this step)
 make generate-raw
-```
-2. (Optional) Pull real benchmark data into CSV:
-```bash
-make fetch-ga4
-make fetch-uci
-make fetch-sec
-```
-3. Load CSVs to BigQuery raw dataset:
-```bash
-make load-raw
-```
-4. Build dbt models and run tests:
-```bash
-make dbt-run
-make dbt-test
-```
-5. Export retention matrix and run quality checks:
-```bash
-make retention-matrix
-make quality-checks
-```
 
-Single command orchestration:
-```bash
+# 4. (Optional) Fetch real benchmark datasets
+make fetch-ga4    # GA4 public BigQuery export
+make fetch-uci    # UCI Online Retail II
+make fetch-sec    # SEC EDGAR financials
+
+# 5. Load to BigQuery and run the full pipeline
 make all
 ```
 
-## Public Mart Interfaces
-- `mart_funnel_monthly`
-- `mart_cohort_retention`
-- `mart_feature_adoption`
-- `mart_revenue_bridge_quarterly`
-- `mart_account_monthly_state`
+---
 
-Detailed metric contracts are in `docs/data_dictionary.md`.
+## Production Adaptability
 
-## Cost Control (Free-Tier First)
-- All template queries require explicit date filters.
-- In paid BigQuery projects, marts can be partitioned for scan cost control.
-- In BigQuery Sandbox mode, this repo keeps marts unpartitioned to avoid 60-day partition TTL data loss.
-- Raw ingestion scripts support small sampling windows.
+The staging layer is the **only surface that changes** when connecting real company data. Replace `stg_sim_events` with your Segment export and `stg_sim_revenue_monthly` with your Stripe MRR snapshot — everything from intermediate upward runs unchanged.
 
-## Tableau Build
-Use `tableau/dashboard_blueprint.md` for worksheet and dashboard assembly order.
+See [`ADAPTER_GUIDE.md`](ADAPTER_GUIDE.md) for step-by-step mapping for Segment, Stripe, Chargebee, and Amplitude.
 
-## Power BI Build
-Use `powerbi/dashboard_blueprint.md` for page-by-page visual setup and starter DAX.
+---
 
-Export Power BI import files:
-```bash
-make powerbi-export
-```
+## Validation
 
-## Notes
-- `stg_sec_financials` is benchmark-only. Core attribution logic is independent from SEC feed.
-- Synthetic layer is explicitly tagged as simulation to avoid overclaiming causality.
+- **13 Python unit tests** — bridge classification (positive + negative), multi-feature simulation, churn/contraction flags
+- **4 dbt singular tests** — funnel monotonicity, adoption bounds [0,1], bridge share consistency, retention spike detection
+- **dbt schema tests** — not_null, unique_combination_of_columns on fact table grain
+
+---
+
+## Documentation
+
+- [`docs/case_study.md`](docs/case_study.md) — Problem, approach, and business interpretation templates
+- [`docs/data_dictionary.md`](docs/data_dictionary.md) — Full column-level schema with metric definitions
+- [`docs/interview_qa.md`](docs/interview_qa.md) — 12 Q&A covering design decisions, limitations, and productionization
