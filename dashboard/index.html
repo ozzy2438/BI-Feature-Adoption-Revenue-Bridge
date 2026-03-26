@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Adoption → Revenue Bridge | Product Analytics Dashboard</title>
+  <meta name="description" content="Interactive analytics dashboard mapping SaaS feature adoption to revenue growth, retention, and churn reduction.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">Feature Adoption → Revenue Bridge</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-page="page-funnel">📊 Funnel Leakage</button>
+      <button class="nav-tab" data-page="page-cohort">🔥 Cohort Retention</button>
+      <button class="nav-tab" data-page="page-adoption">🚀 Feature Adoption</button>
+      <button class="nav-tab" data-page="page-bridge">💰 Revenue Bridge</button>
+      <button class="nav-tab" data-page="page-impact">⚡ Feature Impact</button>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- PAGE 1: FUNNEL LEAKAGE -->
+<div id="page-funnel" class="page active">
+  <div class="page-header">
+    <h1>📊 Onboarding Funnel Leakage</h1>
+    <p>Where are we losing users in the onboarding journey? Track step-by-step conversion and identify the biggest drop-off points.</p>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Total Signups</div><div class="kpi-value" id="kpi-signups">—</div><div class="kpi-sub">Selected month</div></div>
+    <div class="kpi-card"><div class="kpi-label">Paid Customers</div><div class="kpi-value" id="kpi-paid">—</div><div class="kpi-sub">First payment received</div></div>
+    <div class="kpi-card"><div class="kpi-label">Overall Conversion</div><div class="kpi-value" id="kpi-overall-conv">—</div><div class="kpi-sub">Signup → Payment</div></div>
+    <div class="kpi-card"><div class="kpi-label">Biggest Drop-off</div><div class="kpi-value" id="kpi-biggest-drop" style="font-size:1.1rem">—</div><div class="kpi-sub">Highest leakage step</div></div>
+  </div>
+  <div class="select-wrap"><label for="funnel-month-select">Month:</label><select id="funnel-month-select"></select></div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Funnel Visualization</h3>
+      <div id="funnel-bars-container">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:200px;font-size:0.8rem;font-weight:500">Signup</span><div style="flex:1;height:36px;background:rgba(30,38,64,0.5);border-radius:6px;overflow:hidden"><div id="funnel-bar-0" style="height:100%;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:0.75rem;font-weight:600;color:white;transition:width 0.8s ease"></div></div><span id="funnel-val-0" style="width:60px;text-align:right;font-weight:600;font-size:0.85rem">—</span><span id="funnel-conv-0" style="width:50px;text-align:right;font-size:0.75rem;color:#34d399">—</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:200px;font-size:0.8rem;font-weight:500">First Invoice Created</span><div style="flex:1;height:36px;background:rgba(30,38,64,0.5);border-radius:6px;overflow:hidden"><div id="funnel-bar-1" style="height:100%;background:linear-gradient(90deg,#8b5cf6,#ec4899);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:0.75rem;font-weight:600;color:white;transition:width 0.8s ease"></div></div><span id="funnel-val-1" style="width:60px;text-align:right;font-weight:600;font-size:0.85rem">—</span><span id="funnel-conv-1" style="width:50px;text-align:right;font-size:0.75rem;color:#34d399">—</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:200px;font-size:0.8rem;font-weight:500">First Payment Received</span><div style="flex:1;height:36px;background:rgba(30,38,64,0.5);border-radius:6px;overflow:hidden"><div id="funnel-bar-2" style="height:100%;background:linear-gradient(90deg,#06b6d4,#10b981);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:0.75rem;font-weight:600;color:white;transition:width 0.8s ease"></div></div><span id="funnel-val-2" style="width:60px;text-align:right;font-weight:600;font-size:0.85rem">—</span><span id="funnel-conv-2" style="width:50px;text-align:right;font-size:0.75rem;color:#34d399">—</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:200px;font-size:0.8rem;font-weight:500">App Integration Connected</span><div style="flex:1;height:36px;background:rgba(30,38,64,0.5);border-radius:6px;overflow:hidden"><div id="funnel-bar-3" style="height:100%;background:linear-gradient(90deg,#f59e0b,#f43f5e);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:0.75rem;font-weight:600;color:white;transition:width 0.8s ease"></div></div><span id="funnel-val-3" style="width:60px;text-align:right;font-weight:600;font-size:0.85rem">—</span><span id="funnel-conv-3" style="width:50px;text-align:right;font-size:0.75rem;color:#34d399">—</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:200px;font-size:0.8rem;font-weight:500">Plan Upgrade</span><div style="flex:1;height:36px;background:rgba(30,38,64,0.5);border-radius:6px;overflow:hidden"><div id="funnel-bar-4" style="height:100%;background:linear-gradient(90deg,#f43f5e,#ec4899);border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:0.75rem;font-weight:600;color:white;transition:width 0.8s ease"></div></div><span id="funnel-val-4" style="width:60px;text-align:right;font-weight:600;font-size:0.85rem">—</span><span id="funnel-conv-4" style="width:50px;text-align:right;font-size:0.75rem;color:#34d399">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Conversion & Drop-off Detail</h3>
+      <table class="data-table"><thead><tr><th>Step</th><th>Users</th><th>Conversion</th><th>Drop-off</th></tr></thead><tbody id="funnel-table-body"></tbody></table>
+    </div>
+  </div>
+  <div class="chart-grid full"><div class="chart-card"><h3>Funnel Step Trends Over Time</h3><div style="height:320px"><canvas id="funnel-trend-chart"></canvas></div></div></div>
+  <div class="insight-box"><h4>💡 Key Insights — Funnel</h4><ul><li><strong>App Integration Connected</strong> is the biggest bottleneck — consistently dropping 35–67% of users.</li><li>Signup → First Invoice conversion averages ~77%.</li><li>Invoice → Payment conversion is strong at ~80%.</li><li>Plan Upgrade conversion is highly variable (7–40%).</li></ul></div>
+</div>
+
+<!-- PAGE 2: COHORT RETENTION -->
+<div id="page-cohort" class="page">
+  <div class="page-header"><h1>🔥 Cohort Retention Analysis</h1><p>Which paid customer cohorts survive 6+ months?</p></div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Avg M+6 Retention</div><div class="kpi-value" id="kpi-m6-retention">—</div><div class="kpi-sub">Across all cohorts</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Cohorts</div><div class="kpi-value" id="kpi-cohorts-count">—</div><div class="kpi-sub">Payment-based</div></div>
+    <div class="kpi-card"><div class="kpi-label">Best M+6 Cohort</div><div class="kpi-value" id="kpi-best-cohort" style="font-size:1.2rem">—</div><div class="kpi-sub">Highest retention</div></div>
+    <div class="kpi-card"><div class="kpi-label">Worst M+6 Cohort</div><div class="kpi-value" id="kpi-worst-cohort" style="font-size:1.2rem">—</div><div class="kpi-sub">Needs attention</div></div>
+  </div>
+  <div class="chart-grid full"><div class="chart-card"><h3>Retention Heatmap</h3><div class="heatmap-container" id="cohort-heatmap"></div></div></div>
+  <div class="chart-grid full"><div class="chart-card"><h3>Retention Curves by Cohort</h3><div style="height:350px"><canvas id="cohort-curve-chart"></canvas></div></div></div>
+  <div class="insight-box"><h4>💡 Key Insights — Retention</h4><ul><li>Average M+6 retention is ~93%.</li><li>Most churn occurs between M+4 and M+8.</li><li>After M+10, retention stabilizes.</li></ul></div>
+</div>
+
+<!-- PAGE 3: FEATURE ADOPTION -->
+<div id="page-adoption" class="page">
+  <div class="page-header"><h1>🚀 Feature Adoption Comparison</h1><p>Which product features are gaining traction?</p></div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Current Adoption Rate</div><div class="kpi-value" id="kpi-adoption-rate">—</div><div class="kpi-sub">Bank Feed Sync</div></div>
+    <div class="kpi-card"><div class="kpi-label">Adopted Accounts</div><div class="kpi-value" id="kpi-adopted-count">—</div><div class="kpi-sub">Active adopters</div></div>
+    <div class="kpi-card"><div class="kpi-label">Eligible Accounts</div><div class="kpi-value" id="kpi-eligible-count">—</div><div class="kpi-sub">Total active base</div></div>
+    <div class="kpi-card"><div class="kpi-label">Peak Adoption</div><div class="kpi-value" id="kpi-peak-adoption">—</div><div class="kpi-sub">Historical max</div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card"><h3>Bank Feed Sync — Adoption Rate Over Time</h3><div style="height:300px"><canvas id="adoption-trend-chart"></canvas></div></div>
+    <div class="chart-card"><h3>Latest Month — Eligible vs Adopted</h3><div style="height:300px"><canvas id="adoption-bar-chart"></canvas></div></div>
+  </div>
+  <div class="insight-box"><h4>💡 Key Insights — Adoption</h4><ul><li>Bank Feed Sync grew from 5% to ~34%.</li><li>Adoption plateaued at 34-35%.</li><li>66% untapped opportunity remains.</li></ul></div>
+</div>
+
+<!-- PAGE 4: REVENUE BRIDGE -->
+<div id="page-bridge" class="page">
+  <div class="page-header"><h1>💰 Revenue Bridge Waterfall</h1><p>What drove this quarter's MRR change?</p></div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Selected Quarter</div><div class="kpi-value" id="kpi-quarter-label" style="font-size:1.3rem">—</div><div class="kpi-sub">Revenue period</div></div>
+    <div class="kpi-card"><div class="kpi-label">Expansion Revenue</div><div class="kpi-value" id="kpi-positive-delta" style="color:#34d399">—</div><div class="kpi-sub">All positive</div></div>
+    <div class="kpi-card"><div class="kpi-label">Net MRR Delta</div><div class="kpi-value" id="kpi-net-delta">—</div><div class="kpi-sub">Expansion − Contraction</div></div>
+    <div class="kpi-card"><div class="kpi-label">Feature Lift Share</div><div class="kpi-value" id="kpi-lift-share" style="color:#8b5cf6">—</div><div class="kpi-sub">% from features</div></div>
+  </div>
+  <div class="select-wrap"><label for="bridge-quarter-select">Quarter:</label><select id="bridge-quarter-select"></select></div>
+  <div class="chart-grid">
+    <div class="chart-card"><h3>Revenue Waterfall</h3><div id="waterfall-bars"></div></div>
+    <div class="chart-card"><h3>Component Breakdown</h3><div style="height:300px"><canvas id="bridge-chart"></canvas></div></div>
+  </div>
+  <div class="insight-box"><h4>💡 Key Insights — Revenue Bridge</h4><ul><li>New Customers are the dominant growth driver.</li><li>Feature Adoption Lift contributes 4-14% of expansion.</li><li>Plan Upgrades grow as the customer base matures.</li></ul></div>
+</div>
+
+<!-- PAGE 5: FEATURE IMPACT -->
+<div id="page-impact" class="page">
+  <div class="page-header"><h1>⚡ Feature Impact Matrix</h1><p>Do feature adopters churn less and pay more?</p></div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">MRR Uplift (Adopted)</div><div class="kpi-value" id="kpi-mrr-uplift" style="color:#34d399">—</div><div class="kpi-sub">vs non-adopters</div></div>
+    <div class="kpi-card"><div class="kpi-label">Churn Rate Delta</div><div class="kpi-value" id="kpi-churn-delta" style="color:#06b6d4">—</div><div class="kpi-sub">pp lower</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg MRR (Adopted)</div><div class="kpi-value" id="kpi-adopted-mrr">—</div><div class="kpi-sub">Bank Feed Sync</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg MRR (Not Adopted)</div><div class="kpi-value" id="kpi-nonadopt-mrr">—</div><div class="kpi-sub">Non-adopters</div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card"><h3>Churn Rate: Adopted vs Not Adopted</h3><div style="height:280px"><canvas id="impact-churn-chart"></canvas></div></div>
+    <div class="chart-card"><h3>Avg MRR: Adopted vs Not Adopted</h3><div style="height:280px"><canvas id="impact-mrr-chart"></canvas></div></div>
+  </div>
+  <div class="chart-grid full"><div class="chart-card"><h3>Feature Count Impact on Account Economics</h3><table class="data-table"><thead><tr><th>Features Adopted</th><th>Accounts</th><th>Churn Rate</th><th>Avg MRR</th></tr></thead><tbody id="impact-count-table"></tbody></table></div></div>
+  <div class="insight-box"><h4>💡 Key Insights — Feature Impact</h4><ul><li>Feature adopters have ~3x higher avg MRR ($59 vs $20).</li><li>MRR uplift of +$39/account proves feature-driven strategy works.</li></ul></div>
+</div>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
